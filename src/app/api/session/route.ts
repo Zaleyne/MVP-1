@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error("[SESSION API] Supabase insert error:", error.message);
       return NextResponse.json(
-        { error: `Error al guardar sesión: ${error.message}` },
+        { error: "Error al guardar sesión. Intenta de nuevo." },
         { status: 500 }
       );
     }
@@ -70,10 +70,9 @@ export async function POST(request: NextRequest) {
     console.log("[SESSION API] Sesión guardada:", data.id);
     return NextResponse.json(data);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error("[SESSION API ERROR]", message);
+    console.error("[SESSION API ERROR]", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: `Error del servidor: ${message}` },
+      { error: "Error del servidor. Intenta de nuevo." },
       { status: 500 }
     );
   }
@@ -115,7 +114,7 @@ export async function PUT(request: NextRequest) {
     if (error) {
       console.error("[SESSION API] Supabase update error:", error.message);
       return NextResponse.json(
-        { error: `Error al actualizar sesión: ${error.message}` },
+        { error: "Error al actualizar sesión. Intenta de nuevo." },
         { status: 500 }
       );
     }
@@ -123,10 +122,9 @@ export async function PUT(request: NextRequest) {
     console.log("[SESSION API] Sesión actualizada:", data.id);
     return NextResponse.json(data);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error("[SESSION API PUT ERROR]", message);
+    console.error("[SESSION API PUT ERROR]", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: `Error del servidor: ${message}` },
+      { error: "Error del servidor. Intenta de nuevo." },
       { status: 500 }
     );
   }

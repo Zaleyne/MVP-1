@@ -1,14 +1,12 @@
 import OpenAI from "openai";
 
 const rawKey = process.env.OPENROUTER_API_KEY;
-const keyStatus = rawKey
-  ? `YES (length: ${rawKey.length}, starts with: ${rawKey.substring(0, 12)}...)`
-  : "NO (undefined)";
 const trimmed = rawKey?.trim();
-if (trimmed !== rawKey) {
-  console.warn("[OPENROUTER] WARNING: API key has whitespace around it — trimmed automatically");
+if (!trimmed) {
+  console.warn("[OPENROUTER] WARNING: No API key found in environment variables");
+} else if (trimmed !== rawKey) {
+  console.warn("[OPENROUTER] WARNING: API key has whitespace — trimmed automatically");
 }
-console.log("[OPENROUTER] Key loaded:", keyStatus);
 console.log("[OPENROUTER] Model:", process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini (default)");
 
 const openrouter = new OpenAI({
