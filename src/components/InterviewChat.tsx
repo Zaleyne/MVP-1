@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ChatMessage } from "@/lib/types";
 import ProgressBar from "./ProgressBar";
 
@@ -20,6 +20,32 @@ export default function InterviewChat({
   onSubmitAnswer,
 }: InterviewChatProps) {
   const [answer, setAnswer] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
+
+  useEffect(() => {
+    const visualViewport = window.visualViewport;
+    if (!visualViewport) return;
+
+    const handleResize = () => {
+      if (textareaRef.current) {
+        textareaRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    };
+
+    visualViewport.addEventListener("resize", handleResize);
+    return () => visualViewport.removeEventListener("resize", handleResize);
+  }, []);
+
+  const handleFocus = () => {
+    setTimeout(() => {
+      textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 300);
+  };
 
   const handleSubmit = () => {
     const trimmed = answer.trim();
@@ -36,12 +62,12 @@ export default function InterviewChat({
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col">
-      <div className="mb-6">
+    <div className="mx-auto flex h-full w-full max-w-2xl flex-col">
+      <div className="flex-shrink-0 pb-4">
         <ProgressBar current={questionCount} total={totalQuestions} />
       </div>
 
-      <div className="mb-6 flex-1 space-y-4">
+      <div className="flex-1 space-y-4 overflow-y-auto pb-4">
         {messages.map((msg, i) => (
           <div
             key={i}
@@ -70,14 +96,17 @@ export default function InterviewChat({
             </div>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       {!isLoading && (
-        <div className="flex gap-3">
+        <div className="flex flex-shrink-0 gap-3 border-t border-slate-100 pt-3">
           <textarea
+            ref={textareaRef}
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
             onKeyDown={handleKeyDown}
+            onFocus={handleFocus}
             placeholder="Escribe tu respuesta..."
             rows={2}
             className="flex-1 resize-none rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-primary-500 focus:outline-none"

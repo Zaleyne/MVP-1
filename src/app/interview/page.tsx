@@ -274,7 +274,7 @@ export default function InterviewPage() {
   };
 
   return (
-    <div className="min-h-screen px-4 py-8">
+    <div className="min-h-screen px-4 py-8 pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <div className="mb-8 grid grid-cols-[auto_1fr_auto] items-center gap-4">
@@ -337,7 +337,7 @@ export default function InterviewPage() {
 
         {/* Step: Interview */}
         {step === "interview" && (
-          <div className="py-4">
+          <div className="h-[100dvh] overflow-hidden pt-4 md:h-auto md:overflow-visible md:py-4">
             <InterviewChat
               messages={messages}
               questionCount={questionCount}
