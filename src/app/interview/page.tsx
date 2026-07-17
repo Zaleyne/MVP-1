@@ -32,36 +32,14 @@ export default function InterviewPage() {
   const [results, setResults] = useState<GenerateResponse | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
-  const [interviewHeight, setInterviewHeight] = useState<string>("100dvh");
   const sessionStartedAt = useRef(new Date().toISOString());
   const stepRef = useRef<InterviewStep>(step);
 
   useEffect(() => {
     stepRef.current = step;
-  }, [step]);
-
-  useEffect(() => {
-    if (step !== "interview") return;
-
-    const updateHeight = () => {
-      const vvh = window.visualViewport?.height;
-      const wh = window.innerHeight;
-      const height = vvh != null ? Math.min(vvh, wh) : wh;
-      setInterviewHeight(`${height}px`);
-    };
-
-    window.visualViewport?.addEventListener("resize", updateHeight);
-    window.visualViewport?.addEventListener("scroll", updateHeight);
-    window.addEventListener("resize", updateHeight);
-    updateHeight();
-
-    return () => {
-      window.visualViewport?.removeEventListener("resize", updateHeight);
-      window.visualViewport?.removeEventListener("scroll", updateHeight);
-      window.removeEventListener("resize", updateHeight);
-    };
   }, [step]);
 
   const buildSessionPayload = useCallback(
@@ -360,10 +338,7 @@ export default function InterviewPage() {
 
         {/* Step: Interview */}
         {step === "interview" && (
-          <div
-            className="overflow-hidden pt-4 md:h-auto md:overflow-visible md:py-4"
-            style={{ height: interviewHeight }}
-          >
+          <div className="py-4">
             <InterviewChat
               messages={messages}
               questionCount={questionCount}
@@ -395,28 +370,46 @@ export default function InterviewPage() {
               onRegenerate={generateResults}
               isRegenerating={isGenerating}
               onCopy={() => trackEvent("copied_result", { experience_type: experienceType })}
+              feedbackSlot={
+                <>
+                  {!feedbackSubmitted && experienceType && (
+                    <div className="mt-6">
+                      <button
+                        onClick={() => setShowFeedbackModal(true)}
+                        className="w-full rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm transition-all hover:border-primary-200 hover:bg-primary-50 hover:shadow-md"
+                      >
+                        <h3 className="mb-1 text-lg font-bold text-slate-900">
+                          🚀 Deja tu reseña
+                        </h3>
+                        <p className="text-sm text-slate-500">
+                          Cuéntanos qué te pareció esta experiencia. Solo toma 30 segundos.
+                        </p>
+                      </button>
+                    </div>
+                  )}
+
+                  {feedbackSubmitted && (
+                    <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+                      <div className="mb-3 text-4xl">🎉</div>
+                      <h3 className="mb-2 text-lg font-bold text-slate-900">
+                        ¡Gracias por tu opinión!
+                      </h3>
+                      <p className="text-sm text-slate-500">
+                        Tu feedback nos ayuda a crear una mejor herramienta para que más estudiantes descubran el valor de sus experiencias.
+                      </p>
+                    </div>
+                  )}
+                </>
+              }
             />
 
-            {!feedbackSubmitted && experienceType && (
+            {showFeedbackModal && experienceType && (
               <FeedbackForm
                 experienceType={experienceType}
                 results={results}
                 onSubmit={handleFeedbackSubmit}
+                onClose={() => setShowFeedbackModal(false)}
               />
-            )}
-
-            {feedbackSubmitted && (
-              <div className="mx-auto mt-8 w-full max-w-3xl">
-                <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-                  <div className="mb-3 text-4xl">🎉</div>
-                  <h3 className="mb-2 text-lg font-bold text-slate-900">
-                    ¡Gracias por tu opinión!
-                  </h3>
-                  <p className="text-sm text-slate-500">
-                    Tu feedback nos ayuda a crear una mejor herramienta para que más estudiantes descubran el valor de sus experiencias.
-                  </p>
-                </div>
-              </div>
             )}
           </div>
         )}

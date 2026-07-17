@@ -7,6 +7,7 @@ interface FeedbackFormProps {
   experienceType: ExperienceType;
   results: GenerateResponse;
   onSubmit: (answers: FeedbackAnswers) => void;
+  onClose: () => void;
 }
 
 const QUESTIONS = [
@@ -46,6 +47,7 @@ export default function FeedbackForm({
   experienceType,
   results,
   onSubmit,
+  onClose,
 }: FeedbackFormProps) {
   const [answers, setAnswers] = useState<FeedbackAnswers>({
     perceptionChange: null,
@@ -78,12 +80,22 @@ export default function FeedbackForm({
     });
 
     onSubmit(answers);
+    onClose();
   };
 
   return (
-    <div className="mx-auto mt-8 w-full max-w-3xl">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <h3 className="mb-1 text-lg font-bold text-slate-900">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm">
+      <div className="relative mx-4 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 text-slate-400 transition-colors hover:text-slate-600"
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <h3 className="mb-1 pr-8 text-lg font-bold text-slate-900">
           🚀 Ayúdanos a mejorar esta experiencia (30 segundos)
         </h3>
         <p className="mb-6 text-sm text-slate-500">

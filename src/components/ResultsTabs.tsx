@@ -10,6 +10,7 @@ interface ResultsTabsProps {
   onRegenerate: () => void;
   isRegenerating: boolean;
   onCopy?: () => void;
+  feedbackSlot?: React.ReactNode;
 }
 
 export default function ResultsTabs({
@@ -17,6 +18,7 @@ export default function ResultsTabs({
   onRegenerate,
   isRegenerating,
   onCopy,
+  feedbackSlot,
 }: ResultsTabsProps) {
   const [activeTab, setActiveTab] = useState<"cv" | "star">("cv");
 
@@ -91,6 +93,8 @@ export default function ResultsTabs({
           </p>
         </div>
       )}
+
+      {feedbackSlot}
 
       <div className="mt-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <h4 className="mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">

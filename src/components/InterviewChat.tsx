@@ -20,49 +20,40 @@ export default function InterviewChat({
   onSubmitAnswer,
 }: InterviewChatProps) {
   const [answer, setAnswer] = useState("");
+  const [inputBottom, setInputBottom] = useState("0px");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    const container = messagesContainerRef.current;
-    if (!container) return;
-    container.scrollTop = container.scrollHeight;
-  };
 
   useEffect(() => {
     requestAnimationFrame(() => {
-      scrollToBottom();
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     });
   }, [messages, isLoading]);
 
   useEffect(() => {
-    const handleViewportChange = () => {
-      requestAnimationFrame(() => {
-        scrollToBottom();
-      });
+    const updateInputPosition = () => {
+      const vv = window.visualViewport;
+      if (!vv) return;
+      const bottom = window.innerHeight - (vv.offsetTop + vv.height);
+      setInputBottom(`${Math.max(0, bottom)}px`);
     };
 
-    const vv = window.visualViewport;
-    vv?.addEventListener("resize", handleViewportChange);
-    vv?.addEventListener("scroll", handleViewportChange);
-    window.addEventListener("resize", handleViewportChange);
+    window.visualViewport?.addEventListener("resize", updateInputPosition);
+    window.visualViewport?.addEventListener("scroll", updateInputPosition);
+    window.addEventListener("resize", updateInputPosition);
+    updateInputPosition();
 
     return () => {
-      vv?.removeEventListener("resize", handleViewportChange);
-      vv?.removeEventListener("scroll", handleViewportChange);
-      window.removeEventListener("resize", handleViewportChange);
+      window.visualViewport?.removeEventListener("resize", updateInputPosition);
+      window.visualViewport?.removeEventListener("scroll", updateInputPosition);
+      window.removeEventListener("resize", updateInputPosition);
     };
   }, []);
 
   const handleFocus = () => {
-    scrollToBottom();
-    requestAnimationFrame(() => {
-      scrollToBottom();
-    });
-    setTimeout(scrollToBottom, 100);
-    setTimeout(scrollToBottom, 300);
-    setTimeout(scrollToBottom, 500);
+    setTimeout(() => {
+      textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 300);
   };
 
   const handleSubmit = () => {
@@ -80,15 +71,12 @@ export default function InterviewChat({
   };
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-2xl flex-col">
-      <div className="flex-shrink-0 pb-4">
+    <div className="mx-auto w-full max-w-2xl">
+      <div className="pb-4">
         <ProgressBar current={questionCount} total={totalQuestions} />
       </div>
 
-      <div
-        ref={messagesContainerRef}
-        className="flex-1 space-y-4 overflow-y-auto pb-4"
-      >
+      <div className="space-y-4 pb-40">
         {messages.map((msg, i) => (
           <div
             key={i}
@@ -121,24 +109,29 @@ export default function InterviewChat({
       </div>
 
       {!isLoading && (
-        <div className="flex flex-shrink-0 gap-3 border-t border-slate-100 pt-3">
-          <textarea
-            ref={textareaRef}
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onFocus={handleFocus}
-            placeholder="Escribe tu respuesta..."
-            rows={2}
-            className="flex-1 resize-none rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-primary-500 focus:outline-none"
-          />
-          <button
-            onClick={handleSubmit}
-            disabled={!answer.trim()}
-            className="self-end rounded-xl bg-primary-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-primary-600/20 transition-all hover:bg-primary-700 disabled:opacity-40 disabled:shadow-none"
-          >
-            Enviar
-          </button>
+        <div
+          className="fixed left-0 right-0 z-50 border-t border-slate-100 bg-white px-4 py-3"
+          style={{ bottom: inputBottom }}
+        >
+          <div className="mx-auto flex max-w-2xl gap-3">
+            <textarea
+              ref={textareaRef}
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onFocus={handleFocus}
+              placeholder="Escribe tu respuesta..."
+              rows={2}
+              className="flex-1 resize-none rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-primary-500 focus:outline-none"
+            />
+            <button
+              onClick={handleSubmit}
+              disabled={!answer.trim()}
+              className="self-end rounded-xl bg-primary-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-primary-600/20 transition-all hover:bg-primary-700 disabled:opacity-40 disabled:shadow-none"
+            >
+              Enviar
+            </button>
+          </div>
         </div>
       )}
     </div>
