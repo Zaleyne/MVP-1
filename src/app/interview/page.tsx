@@ -34,11 +34,34 @@ export default function InterviewPage() {
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
   const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
+  const [interviewHeight, setInterviewHeight] = useState<string>("100dvh");
   const sessionStartedAt = useRef(new Date().toISOString());
   const stepRef = useRef<InterviewStep>(step);
 
   useEffect(() => {
     stepRef.current = step;
+  }, [step]);
+
+  useEffect(() => {
+    if (step !== "interview") return;
+
+    const updateHeight = () => {
+      const vvh = window.visualViewport?.height;
+      const wh = window.innerHeight;
+      const height = vvh != null ? Math.min(vvh, wh) : wh;
+      setInterviewHeight(`${height}px`);
+    };
+
+    window.visualViewport?.addEventListener("resize", updateHeight);
+    window.visualViewport?.addEventListener("scroll", updateHeight);
+    window.addEventListener("resize", updateHeight);
+    updateHeight();
+
+    return () => {
+      window.visualViewport?.removeEventListener("resize", updateHeight);
+      window.visualViewport?.removeEventListener("scroll", updateHeight);
+      window.removeEventListener("resize", updateHeight);
+    };
   }, [step]);
 
   const buildSessionPayload = useCallback(
@@ -337,7 +360,10 @@ export default function InterviewPage() {
 
         {/* Step: Interview */}
         {step === "interview" && (
-          <div className="h-[100dvh] overflow-hidden pt-4 md:h-auto md:overflow-visible md:py-4">
+          <div
+            className="overflow-hidden pt-4 md:h-auto md:overflow-visible md:py-4"
+            style={{ height: interviewHeight }}
+          >
             <InterviewChat
               messages={messages}
               questionCount={questionCount}

@@ -22,29 +22,47 @@ export default function InterviewChat({
   const [answer, setAnswer] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    container.scrollTop = container.scrollHeight;
+  };
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    requestAnimationFrame(() => {
+      scrollToBottom();
+    });
   }, [messages, isLoading]);
 
   useEffect(() => {
-    const visualViewport = window.visualViewport;
-    if (!visualViewport) return;
-
-    const handleResize = () => {
-      if (textareaRef.current) {
-        textareaRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }
+    const handleViewportChange = () => {
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
     };
 
-    visualViewport.addEventListener("resize", handleResize);
-    return () => visualViewport.removeEventListener("resize", handleResize);
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", handleViewportChange);
+    vv?.addEventListener("scroll", handleViewportChange);
+    window.addEventListener("resize", handleViewportChange);
+
+    return () => {
+      vv?.removeEventListener("resize", handleViewportChange);
+      vv?.removeEventListener("scroll", handleViewportChange);
+      window.removeEventListener("resize", handleViewportChange);
+    };
   }, []);
 
   const handleFocus = () => {
-    setTimeout(() => {
-      textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }, 300);
+    scrollToBottom();
+    requestAnimationFrame(() => {
+      scrollToBottom();
+    });
+    setTimeout(scrollToBottom, 100);
+    setTimeout(scrollToBottom, 300);
+    setTimeout(scrollToBottom, 500);
   };
 
   const handleSubmit = () => {
@@ -67,7 +85,10 @@ export default function InterviewChat({
         <ProgressBar current={questionCount} total={totalQuestions} />
       </div>
 
-      <div className="flex-1 space-y-4 overflow-y-auto pb-4">
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 space-y-4 overflow-y-auto pb-4"
+      >
         {messages.map((msg, i) => (
           <div
             key={i}
